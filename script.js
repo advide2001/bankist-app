@@ -135,6 +135,11 @@ const calcDisplaySummary = function (account) {
 // Event handlers
 let currentAccount;
 
+// Always logged in for testing purpose
+currentAccount = account1;
+updateUI(currentAccount);
+containerApp.style.opacity = 100;
+
 btnLogin.addEventListener('click', e => {
   e.preventDefault();
 
