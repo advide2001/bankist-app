@@ -60,8 +60,20 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements = function (movements) {
-  movements.forEach(function (movement, index) {
+const createUserNames = function (accounts) {
+  accounts.forEach(function (user) {
+    user.username = user.owner
+      .toLowerCase()
+      .split(' ')
+      .map(name => name[0])
+      .join('');
+  });
+};
+createUserNames(accounts);
+
+// Calculate diplay information
+const displayMovements = function (account) {
+  account.movements.forEach(function (movement, index) {
     const transactionType = movement > 0 ? 'deposit' : 'withdrawal';
 
     const transactionDisplayRow = `
@@ -76,31 +88,27 @@ const displayMovements = function (movements) {
   });
 };
 
-const createUserNames = function (accounts) {
-  accounts.forEach(function (user) {
-    user.username = user.owner
-      .toLowerCase()
-      .split(' ')
-      .map(name => name[0])
-      .join('');
-  });
+const updateUI = function (currentAccount) {
+  // Calculate all account related information
+  calcGlobalBalaance(currentAccount);
+  displayMovements(currentAccount);
+  calcDisplaySummary(currentAccount);
 };
-createUserNames(accounts);
 
-// Calculate diplay information
-const calcGlobalBalaance = function (movements) {
-  const globalBalance = movements.reduce(
+const calcGlobalBalaance = function (account) {
+  const globalBalance = account.movements.reduce(
     (accumalator, movement) => accumalator + movement
   );
+  account.balance = globalBalance;
   labelBalance.textContent = `${Math.round(globalBalance)} USD`;
 };
 
-const calcDisplaySummary = function (movements) {
-  const incomes = movements
+const calcDisplaySummary = function (account) {
+  const incomes = account.movements
     .filter(movement => movement > 0)
     .reduce((accumulator, movement) => accumulator + movement, 0);
 
-  const expenditures = movements
+  const expenditures = account.movements
     .filter(movement => movement < 0)
     .reduce((accumulator, movement) => accumulator + movement, 0);
 
@@ -122,10 +130,8 @@ btnLogin.addEventListener('click', e => {
     labelWelcome.textContent = `Welcome back, ${
       currentAccount.owner.split(' ')[0]
     }`;
-    // Calculate all account related information
-    calcGlobalBalaance(currentAccount.movements);
-    displayMovements(currentAccount.movements);
-    calcDisplaySummary(currentAccount.movements);
+
+    updateUI(currentAccount);
 
     // Change the opacity, to display the account info
     containerApp.style.opacity = 1;
@@ -133,5 +139,26 @@ btnLogin.addEventListener('click', e => {
     inputLoginPin.blur();
   } else {
     console.log('Invalid PIN or Username');
+  }
+});
+
+btnTransfer.addEventListener('click', e => {
+  e.preventDefault();
+  const transferAmount = Number(inputTransferAmount.value);
+  const beneficiaryAccount = accounts.find(
+    account => account.username === inputTransferTo.value
+  );
+  inputTransferAmount.value = inputTransferTo.value = '';
+  if (
+    transferAmount > 0 &&
+    beneficiaryAccount &&
+    transferAmount <= currentAccount.balance &&
+    beneficiaryAccount?.username !== currentAccount.username
+  ) {
+    currentAccount.movements.push(-1 * transferAmount);
+    beneficiaryAccount.movements.push(transferAmount);
+    updateUI(currentAccount);
+  } else {
+    console.log('Transfer failed');
   }
 });
