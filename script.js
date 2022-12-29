@@ -182,3 +182,20 @@ btnClose.addEventListener('click', e => {
     console.log('Credentials are invalid');
   }
 });
+
+btnLoan.addEventListener('click', e => {
+  e.preventDefault();
+  const requestedAmount = Number(inputLoanAmount.value);
+  if (
+    requestedAmount > 0 &&
+    currentAccount.movements.some(movement => movement >= 0.1 * requestedAmount)
+  ) {
+    // Add movement to account
+    currentAccount.movements.push(requestedAmount);
+    // Update UI
+    updateUI(currentAccount);
+  } else {
+    console.log('You are not eligible for a loan of this amount');
+  }
+  inputLoanAmount.value = '';
+});
