@@ -162,3 +162,23 @@ btnTransfer.addEventListener('click', e => {
     console.log('Transfer failed');
   }
 });
+
+btnClose.addEventListener('click', e => {
+  e.preventDefault();
+  const inputUsername = inputCloseUsername.value;
+  const inputPin = inputClosePin.value;
+
+  if (
+    inputUsername === currentAccount.username &&
+    Number(inputPin) === currentAccount.pin
+  ) {
+    const accountIndex = accounts.findIndex(
+      account => account.username === currentAccount.username
+    );
+    accounts.splice(accountIndex, 1);
+    containerApp.style.opacity = 0;
+    inputCloseUsername.value = inputClosePin.value = '';
+  } else {
+    console.log('Credentials are invalid');
+  }
+});
