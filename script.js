@@ -72,8 +72,12 @@ const createUserNames = function (accounts) {
 createUserNames(accounts);
 
 // Calculate diplay information
-const displayMovements = function (account) {
-  account.movements.forEach(function (movement, index) {
+const displayMovements = function (account, sort = false) {
+  const sortedMovements = sort
+    ? account.movements.slice().sort((a, b) => a - b)
+    : account.movements;
+
+  sortedMovements.forEach(function (movement, index) {
     const transactionType = movement > 0 ? 'deposit' : 'withdrawal';
 
     const transactionDisplayRow = `
@@ -198,4 +202,12 @@ btnLoan.addEventListener('click', e => {
     console.log('You are not eligible for a loan of this amount');
   }
   inputLoanAmount.value = '';
+});
+
+let sorted = false;
+
+btnSort.addEventListener('click', e => {
+  e.preventDefault();
+  displayMovements(currentAccount, !sorted);
+  sorted = !sorted;
 });
