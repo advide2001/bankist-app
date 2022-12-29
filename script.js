@@ -41,7 +41,6 @@ const labelDate = document.querySelector('.date');
 const labelBalance = document.querySelector('.balance__value');
 const labelSumIn = document.querySelector('.summary__value--in');
 const labelSumOut = document.querySelector('.summary__value--out');
-const labelSumInterest = document.querySelector('.summary__value--interest');
 const labelTimer = document.querySelector('.timer');
 
 const containerApp = document.querySelector('.app');
@@ -70,13 +69,12 @@ const displayMovements = function (movements) {
       <div class="movements__type movements__type--${transactionType}">
       ${index + 1} ${transactionType}
       </div>
-      <div class="movements__value"> &#8377 ${movement}</div>
+      <div class="movements__value"> $ ${movement}</div>
     </div>`;
 
     containerMovements.insertAdjacentHTML('afterbegin', transactionDisplayRow);
   });
 };
-displayMovements(account1.movements);
 
 const createUserNames = function (accounts) {
   accounts.forEach(function (user) {
@@ -87,5 +85,53 @@ const createUserNames = function (accounts) {
       .join('');
   });
 };
-
 createUserNames(accounts);
+
+// Calculate diplay information
+const calcGlobalBalaance = function (movements) {
+  const globalBalance = movements.reduce(
+    (accumalator, movement) => accumalator + movement
+  );
+  labelBalance.textContent = `${Math.round(globalBalance)} USD`;
+};
+
+const calcDisplaySummary = function (movements) {
+  const incomes = movements
+    .filter(movement => movement > 0)
+    .reduce((accumulator, movement) => accumulator + movement, 0);
+
+  const expenditures = movements
+    .filter(movement => movement < 0)
+    .reduce((accumulator, movement) => accumulator + movement, 0);
+
+  labelSumIn.textContent = `$${Math.round(incomes)}`;
+  labelSumOut.textContent = `$${Math.round(expenditures)}`;
+};
+
+// Event handlers
+let currentAccount;
+
+btnLogin.addEventListener('click', e => {
+  e.preventDefault();
+
+  currentAccount = accounts.find(
+    account => account.username === inputLoginUsername.value
+  );
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    // Display UI and message
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(' ')[0]
+    }`;
+    // Calculate all account related information
+    calcGlobalBalaance(currentAccount.movements);
+    displayMovements(currentAccount.movements);
+    calcDisplaySummary(currentAccount.movements);
+
+    // Change the opacity, to display the account info
+    containerApp.style.opacity = 1;
+    inputLoginUsername.value = inputLoginPin.value = '';
+    inputLoginPin.blur();
+  } else {
+    console.log('Invalid PIN or Username');
+  }
+});
