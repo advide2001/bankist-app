@@ -92,11 +92,18 @@ const displayMovements = function (account, sort = false) {
   sortedMovements.forEach(function (movement, index) {
     const transactionType = movement > 0 ? 'deposit' : 'withdrawal';
 
+    const displayDate = new Date(account.movementsDates[index]);
+    const day = `${displayDate.getDate()}`.padStart(2, 0);
+    const month = `${displayDate.getMonth() + 1}`.padStart(2, 0);
+    const year = displayDate.getFullYear();
+    const displayDateStr = `${day}/${month}/${year}`;
+
     const transactionDisplayRow = `
     <div class="movements__row">
       <div class="movements__type movements__type--${transactionType}">
       ${index + 1} ${transactionType}
       </div>
+      <div class="movements__date">${displayDateStr}</div>
       <div class="movements__value"> $ ${movement}</div>
     </div>`;
 
@@ -140,6 +147,14 @@ currentAccount = account1;
 updateUI(currentAccount);
 containerApp.style.opacity = 100;
 
+const now = new Date();
+const day = `${now.getDay()}`.padStart(2, 0);
+const month = `${now.getMonth() + 1}`.padStart(2, 0);
+const year = now.getFullYear();
+const hour = now.getHours();
+const minute = `${now.getMinutes()}`.padStart(2, 0);
+labelDate.textContent = `${day}/${month}/${year}, ${hour}:${minute}`;
+
 btnLogin.addEventListener('click', e => {
   e.preventDefault();
 
@@ -178,6 +193,8 @@ btnTransfer.addEventListener('click', e => {
   ) {
     currentAccount.movements.push(-1 * transferAmount);
     beneficiaryAccount.movements.push(transferAmount);
+    currentAccount.movementsDates.push(new Date().toISOString());
+    beneficiaryAccount.movementsDates.push(new Date().toISOString());
     updateUI(currentAccount);
   } else {
     console.log('Transfer failed');
@@ -213,6 +230,7 @@ btnLoan.addEventListener('click', e => {
   ) {
     // Add movement to account
     currentAccount.movements.push(requestedAmount);
+    currentAccount.movementsDates.push(new Date().toISOString());
     // Update UI
     updateUI(currentAccount);
   } else {
