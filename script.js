@@ -97,8 +97,6 @@ const formatMovementDates = transactionDate => {
   };
 
   const diffArray = calcDaysPassed(DATE, transactionDate);
-  console.log(diffArray);
-
   let dateDisplayStr = '';
 
   if (diffArray[0] == 0 && diffArray[1] == 0 && diffArray[2] == 0) {
@@ -169,12 +167,7 @@ const calcDisplaySummary = function (account) {
 };
 
 // Event handlers
-let currentAccount;
-
-// Always logged in for testing purpose
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
+let currentAccount, timer;
 
 const now = new Date();
 const day = `${now.getDay()}`.padStart(2, 0);
@@ -183,6 +176,25 @@ const year = now.getFullYear();
 const hour = now.getHours();
 const minute = `${now.getMinutes()}`.padStart(2, 0);
 labelDate.textContent = `${day}/${month}/${year}, ${hour}:${minute}`;
+
+const logoutTimer = () => {
+  const tick = () => {
+    const mins = String(Math.trunc(time / 60)).padStart(2, 0);
+    const secs = String(time % 60).padStart(2, 0);
+    labelTimer.textContent = `${mins}:${secs}`;
+    // when time == 0, we should log out the user
+    if (time === 0) {
+      clearInterval(logoutTimer);
+      containerApp.style.opacity = 0;
+      labelWelcome.textContent = 'Log in to get started';
+    }
+    time--; // Remove one second
+  };
+  let time = 300;
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
+};
 
 btnLogin.addEventListener('click', e => {
   e.preventDefault();
@@ -202,6 +214,9 @@ btnLogin.addEventListener('click', e => {
     containerApp.style.opacity = 1;
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+    // set logout timer
+    if (timer) clearInterval(timer);
+    timer = logoutTimer();
   } else {
     console.log('Invalid PIN or Username');
   }
@@ -225,6 +240,8 @@ btnTransfer.addEventListener('click', e => {
     currentAccount.movementsDates.push(new Date().toISOString());
     beneficiaryAccount.movementsDates.push(new Date().toISOString());
     updateUI(currentAccount);
+    if (timer) clearInterval(timer);
+    timer = logoutTimer();
   } else {
     console.log('Transfer failed');
   }
@@ -257,11 +274,19 @@ btnLoan.addEventListener('click', e => {
     requestedAmount > 0 &&
     currentAccount.movements.some(movement => movement >= 0.1 * requestedAmount)
   ) {
-    // Add movement to account
-    currentAccount.movements.push(requestedAmount);
-    currentAccount.movementsDates.push(new Date().toISOString());
-    // Update UI
-    updateUI(currentAccount);
+    console.log(
+      'Your loan request is being processed, funds will be credited to your account'
+    );
+    setTimeout(() => {
+      // Add movement to account
+      currentAccount.movements.push(requestedAmount);
+      currentAccount.movementsDates.push(new Date().toISOString());
+      // Update UI
+      updateUI(currentAccount);
+    }, 3000);
+
+    if (timer) clearInterval(timer);
+    timer = logoutTimer();
   } else {
     console.log('You are not eligible for a loan of this amount');
   }
