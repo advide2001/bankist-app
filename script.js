@@ -16,10 +16,10 @@ const account1 = {
     '2019-12-23T07:42:02.383Z',
     '2020-01-28T09:15:04.904Z',
     '2020-04-01T10:17:24.185Z',
-    '2020-05-08T14:11:59.604Z',
-    '2020-05-27T17:01:17.194Z',
-    '2020-07-11T23:36:17.929Z',
-    '2020-07-12T10:51:36.790Z',
+    '2021-11-28T18:49:59.371Z',
+    '2022-12-25T14:43:26.374Z',
+    '2022-12-28T18:49:59.371Z',
+    '2022-12-30T12:01:20.894Z',
   ],
   currency: 'EUR',
   locale: 'pt-PT', // de-DE
@@ -37,9 +37,9 @@ const account2 = {
     '2019-12-25T06:04:23.907Z',
     '2020-01-25T14:18:46.235Z',
     '2020-02-05T16:33:06.386Z',
-    '2020-04-10T14:43:26.374Z',
-    '2020-06-25T18:49:59.371Z',
-    '2020-07-26T12:01:20.894Z',
+    '2022-12-25T14:43:26.374Z',
+    '2022-12-28T18:49:59.371Z',
+    '2022-12-30T12:01:20.894Z',
   ],
   currency: 'USD',
   locale: 'en-US',
@@ -72,6 +72,8 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+const DATE = new Date();
+
 const createUserNames = function (accounts) {
   accounts.forEach(function (user) {
     user.username = user.owner
@@ -84,6 +86,35 @@ const createUserNames = function (accounts) {
 createUserNames(accounts);
 
 // Calculate diplay information
+
+const formatMovementDates = transactionDate => {
+  const calcDaysPassed = (date1, date2) => {
+    const diffArray = [0, 0, 0]; // years passed, months passed, days passed
+    diffArray[2] = Math.abs(date1.getDate() - date2.getDate());
+    diffArray[1] = Math.abs(date1.getMonth() - date2.getMonth());
+    diffArray[0] = Math.abs(date1.getFullYear() - date2.getFullYear());
+    return diffArray;
+  };
+
+  const diffArray = calcDaysPassed(DATE, transactionDate);
+  console.log(diffArray);
+
+  let dateDisplayStr = '';
+
+  if (diffArray[0] == 0 && diffArray[1] == 0 && diffArray[2] == 0) {
+    dateDisplayStr = 'Today';
+  } else if (diffArray[0] == 0 && diffArray[1] == 0 && diffArray[2] == 1) {
+    dateDisplayStr = 'Yesterday';
+  } else if (diffArray[0] == 0 && diffArray[1] == 0 && diffArray[2] > 1) {
+    dateDisplayStr = `${diffArray[2]} days ago`;
+  } else if (diffArray[0] == 0 && diffArray[1] > 0) {
+    dateDisplayStr = `${diffArray[1]} months ago`;
+  } else if (diffArray[0] > 0) {
+    dateDisplayStr = `${diffArray[0]} years ago`;
+  }
+  return dateDisplayStr;
+};
+
 const displayMovements = function (account, sort = false) {
   const sortedMovements = sort
     ? account.movements.slice().sort((a, b) => a - b)
@@ -92,11 +123,9 @@ const displayMovements = function (account, sort = false) {
   sortedMovements.forEach(function (movement, index) {
     const transactionType = movement > 0 ? 'deposit' : 'withdrawal';
 
-    const displayDate = new Date(account.movementsDates[index]);
-    const day = `${displayDate.getDate()}`.padStart(2, 0);
-    const month = `${displayDate.getMonth() + 1}`.padStart(2, 0);
-    const year = displayDate.getFullYear();
-    const displayDateStr = `${day}/${month}/${year}`;
+    const displayDateStr = formatMovementDates(
+      new Date(account.movementsDates[index])
+    );
 
     const transactionDisplayRow = `
     <div class="movements__row">
